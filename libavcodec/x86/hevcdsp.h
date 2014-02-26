@@ -6,7 +6,7 @@ struct AVFrame;
 struct UpsamplInf;
 struct HEVCWindow;
 
-//#define OPTI_ASM
+#define OPTI_ASM
 
 #define PEL_LINK_ASM(dst, idx1, idx2, idx3, name, D) \
 dst[idx1][idx2][idx3] = ff_hevc_put_hevc_ ## name ## _ ## D ## _sse4
@@ -98,8 +98,14 @@ void ff_hevc_weighted_pred_avg8_10_sse(uint8_t denom, int16_t wl0Flag, int16_t w
 ///////////////////////////////////////////////////////////////////////////////
 PEL_PROTOTYPE(pel_pixels2 ,  8);
 PEL_PROTOTYPE(pel_pixels4 ,  8);
+PEL_PROTOTYPE(pel_pixels6 ,  8);
 PEL_PROTOTYPE(pel_pixels8 ,  8);
+PEL_PROTOTYPE(pel_pixels12,  8);
 PEL_PROTOTYPE(pel_pixels16,  8);
+PEL_PROTOTYPE(pel_pixels24,  8);
+PEL_PROTOTYPE(pel_pixels32,  8);
+PEL_PROTOTYPE(pel_pixels48,  8);
+PEL_PROTOTYPE(pel_pixels64,  8);
 
 PEL_PROTOTYPE(pel_pixels2 , 10);
 PEL_PROTOTYPE(pel_pixels4 , 10);
@@ -110,8 +116,12 @@ PEL_PROTOTYPE(pel_pixels8 , 10);
 ///////////////////////////////////////////////////////////////////////////////
 PEL_PROTOTYPE(epel_h2 ,  8);
 PEL_PROTOTYPE(epel_h4 ,  8);
+PEL_PROTOTYPE(epel_h6 ,  8);
 PEL_PROTOTYPE(epel_h8 ,  8);
+PEL_PROTOTYPE(epel_h12,  8);
 PEL_PROTOTYPE(epel_h16,  8);
+PEL_PROTOTYPE(epel_h24,  8);
+PEL_PROTOTYPE(epel_h32,  8);
 
 PEL_PROTOTYPE(epel_h2 , 10);
 PEL_PROTOTYPE(epel_h4 , 10);
@@ -119,8 +129,12 @@ PEL_PROTOTYPE(epel_h8 , 10);
 
 PEL_PROTOTYPE(epel_v2 ,  8);
 PEL_PROTOTYPE(epel_v4 ,  8);
+PEL_PROTOTYPE(epel_v6 ,  8);
 PEL_PROTOTYPE(epel_v8 ,  8);
+PEL_PROTOTYPE(epel_v12,  8);
 PEL_PROTOTYPE(epel_v16,  8);
+PEL_PROTOTYPE(epel_v24,  8);
+PEL_PROTOTYPE(epel_v32,  8);
 
 
 PEL_PROTOTYPE(epel_v2 , 10);
@@ -139,14 +153,24 @@ PEL_PROTOTYPE(epel_hv8, 10);
 ///////////////////////////////////////////////////////////////////////////////
 PEL_PROTOTYPE(qpel_h4 ,  8);
 PEL_PROTOTYPE(qpel_h8 ,  8);
-PEL_PROTOTYPE(qpel_h16 ,  8);
+PEL_PROTOTYPE(qpel_h12,  8);
+PEL_PROTOTYPE(qpel_h16,  8);
+PEL_PROTOTYPE(qpel_h24,  8);
+PEL_PROTOTYPE(qpel_h32,  8);
+PEL_PROTOTYPE(qpel_h48,  8);
+PEL_PROTOTYPE(qpel_h64,  8);
 
 PEL_PROTOTYPE(qpel_h4 , 10);
 PEL_PROTOTYPE(qpel_h8 , 10);
 
 PEL_PROTOTYPE(qpel_v4 ,  8);
 PEL_PROTOTYPE(qpel_v8 ,  8);
-PEL_PROTOTYPE(qpel_v16 ,  8);
+PEL_PROTOTYPE(qpel_v12,  8);
+PEL_PROTOTYPE(qpel_v16,  8);
+PEL_PROTOTYPE(qpel_v24,  8);
+PEL_PROTOTYPE(qpel_v32,  8);
+PEL_PROTOTYPE(qpel_v48,  8);
+PEL_PROTOTYPE(qpel_v64,  8);
 
 PEL_PROTOTYPE(qpel_v4 , 10);
 PEL_PROTOTYPE(qpel_v8 , 10);

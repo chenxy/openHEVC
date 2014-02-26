@@ -24,46 +24,6 @@ SECTION_RODATA
 cextern hevc_epel_filters
 cextern hevc_qpel_filters
 
-epel_extra_before   DB  1                        ;corresponds to EPEL_EXTRA_BEFORE in hevc.h
-max_pb_size         DB  64                       ;corresponds to MAX_PB_SIZE in hevc.h
-
-qpel_extra_before   DB  0,  3,  3,  2            ;corresponds to the ff_hevc_qpel_extra_before in hevc.c
-qpel_extra          DB  0,  6,  7,  6            ;corresponds to the ff_hevc_qpel_extra in hevc.c
-qpel_extra_after    DB  0,  3,  4,  4
-
-epel_h_shuffle1_8   DB  0,  1,  2,  3
-                    DB  1,  2,  3,  4
-                    DB  2,  3,  4,  5
-                    DB  3,  4,  5,  6
-
-epel_h_shuffle1_10  DB  0,  1,  2,  3,  4,  5,  6,  7
-                    DB  2,  3,  4,  5,  6,  7,  8,  9
-
-epel_h_shuffle2_10  DB  4,  5,  6,  7,  8,  9, 10, 11
-                    DB  6,  7,  8,  9, 10, 11, 12, 13
-
-qpel_h_shuffle1     DB  0,  1,  2,  3,  4,  5,  6,  7
-                    DB  1,  2,  3,  4,  5,  6,  7,  8
-
-qpel_h_filter1_8    DB -1,  4,-10, 58, 17, -5,  1,  0
-                    DB -1,  4,-10, 58, 17, -5,  1,  0
-
-qpel_h_filter2_8    DB -1,  4,-11, 40, 40,-11,  4, -1
-                    DB -1,  4,-11, 40, 40,-11,  4, -1
-
-qpel_h_filter3_8    DB  0,  1, -5, 17, 58,-10,  4, -1
-                    DB  0,  1, -5, 17, 58,-10,  4, -1
-
-qpel_h_filter1_10   DW -1,  4,-10, 58, 17, -5,  1,  0
-
-qpel_h_filter2_10   DW -1,  4,-11, 40, 40,-11,  4, -1
-
-qpel_h_filter3_10   DW  0,  1, -5, 17, 58,-10,  4, -1
-
-single_mask_16      DW  0,  0,  0,  0,  0,  0,  0, -1
-single_mask_32      DW  0,  0,  0,  0,  0,  0, -1, -1
-SECTION .text
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -198,7 +158,7 @@ SECTION .text
 %endmacro
 
 
-%macro QPEL_H_FILTER 2
+%macro QPEL_FILTER 2
     movsxd           %2q, %2d                    ; extend sign
     sub              %2q, 1
     shl              %2q, 4                      ; multiply by 16
@@ -219,48 +179,6 @@ SECTION .text
     punpcklqdq       m11, m11                    ; contains first 2 filters
     
 %endmacro
-
-%macro QPEL_V_FILTER 2
-    movdqu            m6, [qpel_h_filter%1_10]
-    psrldq            m7, m6, 2
-    psrldq            m8, m6, 4
-    psrldq            m9, m6, 6
-    psrldq           m10, m6, 8
-    psrldq           m11, m6, 10
-    psrldq           m12, m6, 12
-    psrldq           m13, m6, 14
-
-    punpcklwd         m6, m6                    ; put double values to 32bit.
-    punpcklwd         m7, m7
-    punpcklwd         m8, m8
-    punpcklwd         m9, m9
-    punpcklwd        m10, m10
-    punpcklwd        m11, m11
-    punpcklwd        m12, m12
-    punpcklwd        m13, m13
-
-%if %2 == 10
-    psrad             m6, m6, 16
-    psrad             m7, m7, 16
-    psrad             m8, m8, 16
-    psrad             m9, m9, 16
-    psrad            m10, m10, 16
-    psrad            m11, m11, 16
-    psrad            m12, m12, 16
-    psrad            m13, m13, 16
-%endif
-
-    pshufd            m6, m6, 0
-    pshufd            m7, m7, 0
-    pshufd            m8, m8, 0
-    pshufd            m9, m9, 0
-    pshufd           m10, m10, 0
-    pshufd           m11, m11, 0
-    pshufd           m12, m12, 0
-    pshufd           m13, m13, 0
-
-%endmacro
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -398,6 +316,36 @@ SECTION .text
 %endif
 %endmacro
 
+%macro QPEL_H_LOADB 2
+%if %1 = 8
+    movdqu            m0, [%2q+  r9-3]          ; load data from source
+    movdqu            m1, [%2q+  r9-2]
+    movdqu            m2, [%2q+  r9-1]
+    movdqu            m3, [%2q+  r9  ]
+    movdqu            m4, [%2q+  r9+1]
+    movdqu            m5, [%2q+  r9+2]
+    movdqu            m6, [%2q+  r9+3]
+    movdqu            m7, [%2q+  r9+4]
+    SBUTTERFLY        wd, 0, 1, 10
+    SBUTTERFLY        wd, 2, 3, 10
+    SBUTTERFLY        wd, 4, 5, 10
+    SBUTTERFLY        wd, 6, 7, 10
+%else
+    movdqu            m0, [%2q+  2*r9-6]          ; load data from source
+    movdqu            m1, [%2q+  2*r9-4]
+    movdqu            m2, [%2q+  2*r9-2]
+    movdqu            m3, [%2q+  2*r9  ]
+    movdqu            m4, [%2q+  2*r9+2]
+    movdqu            m5, [%2q+  2*r9+4]
+    movdqu            m6, [%2q+  2*r9+6]
+    movdqu            m7, [%2q+  2*r9+8]
+    SBUTTERFLY        dq, 0, 1, 10
+    SBUTTERFLY        dq, 2, 3, 10
+    SBUTTERFLY        dq, 4, 5, 10
+    SBUTTERFLY        dq, 6, 7, 10
+%endif
+%endmacro
+
 
 
 %macro QPEL_V_LOAD 3
@@ -494,10 +442,19 @@ SECTION .text
     movd     [%1q+2*r9], %2
 %endmacro
 %macro PEL_STORE4 3
-    movq      [%1q+2*r9],%2
+    movq      [%1q+2*r9], %2
+%endmacro
+%macro PEL_STORE6 3
+    movq           [%1q], %2
+    psrldq            %2, 8
+    movd         [%1q+8], %2
 %endmacro
 %macro PEL_STORE8 3
-    movdqa    [%1q+2*r9],%2
+    movdqa    [%1q+2*r9], %2
+%endmacro
+%macro PEL_STORE12 3
+    movdqa         [%1q], %2
+    movq           [%1q+16], %3
 %endmacro
 %macro PEL_STORE16 3
     PEL_STORE8        %1, %2, %3
@@ -521,6 +478,27 @@ SECTION .text
     psrad             %5, m15, 16
     pxor             m15, m15
 %endmacro
+
+
+%macro LOOP_INIT2 1
+    pxor             m15, m15                    ; set register at zero
+    mov              r10, 0                      ; set height counter
+    mov               r9, 0                      ; set width counter
+%1:
+
+%endmacro
+
+%macro LOOP_END2 5
+
+    lea              %2q, [%2q+2*%3q]           ; dst += dststride
+    lea              %4q, [%4q+  %5q]           ; src += srcstride
+
+    add              r10, 1
+    cmp              r10, heightq                ; cmp height
+    jl                %1                         ; height loop
+%endmacro
+
+
 
 %if ARCH_X86_64
 INIT_XMM sse4                                    ; adds ff_ and _sse4 to function name
@@ -570,6 +548,163 @@ INIT_XMM sse4                                    ; adds ff_ and _sse4 to functio
     RET
 %endmacro
 
+cglobal hevc_put_hevc_pel_pixels2_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_2_8
+    movdqu            m0, [srcq]            ; load data from source
+    punpcklbw         m1, m0, m15
+    psllw             m1, 6
+    PEL_STORE2       dst, m1, m2
+    LOOP_END2  pixels_2_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels4_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_4_8
+    movdqu            m0, [srcq]            ; load data from source
+    punpcklbw         m1, m0, m15
+    psllw             m1, 6
+    PEL_STORE8       dst, m1, m2
+    LOOP_END2  pixels_4_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels6_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_6_8
+    movdqu            m0, [srcq]            ; load data from source
+    punpcklbw         m1, m0, m15
+    psllw             m1, 6
+    PEL_STORE6      dst, m1, m2
+    LOOP_END2  pixels_6_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels8_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_8_8
+    movdqu            m0, [srcq]            ; load data from source
+    punpcklbw         m1, m0, m15
+    psllw             m1, 6
+    PEL_STORE8      dst, m1, m2
+    LOOP_END2  pixels_8_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels12_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_12_8
+    movdqu            m0, [srcq]            ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE12      dst, m1, m2
+    LOOP_END2  pixels_12_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels16_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_16_8
+    movdqu            m0, [srcq]            ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      dst, m1, m2
+    LOOP_END2  pixels_16_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels24_8, 9, 12, 15, dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_24_8
+    movdqu            m0, [srcq]                                               ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      dst, m1, m2
+    lea              r11, [srcq + 16]
+    movdqu            m0, [r11]  
+    lea              r11, [dstq + 32]                                              ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE8       r11, m1, m2
+    LOOP_END2  pixels_24_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels32_8, 9, 12, 15, dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_32_8
+    movdqu            m0, [srcq]                                               ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      dst, m1, m2
+    lea              r11, [srcq + 16]
+    movdqu            m0, [r11]  
+    lea              r11, [dstq + 32]                                              ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      r11, m1, m2
+    LOOP_END2  pixels_32_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels48_8, 9, 12, 15, dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_48_8
+    movdqu            m0, [srcq]                                               ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      dst, m1, m2
+    lea              r11, [srcq + 16]
+    movdqu            m0, [r11]  
+    lea              r11, [dstq + 32]                                              ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      r11, m1, m2
+    lea              r11, [srcq + 32]
+    movdqu            m0, [r11]  
+    lea              r11, [dstq + 64]                                              ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      r11, m1, m2
+    LOOP_END2  pixels_48_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_pel_pixels64_8, 9, 12, 15, dst, dststride, src, srcstride,width,height
+    LOOP_INIT2        pixels_64_8
+    movdqu            m0, [srcq]                                               ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      dst, m1, m2
+    lea              r11, [srcq + 16]
+    movdqu            m0, [r11]  
+    lea              r11, [dstq + 32]                                              ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      r11, m1, m2
+    lea              r11, [srcq + 32]
+    movdqu            m0, [r11]  
+    lea              r11, [dstq + 64]                                              ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      r11, m1, m2
+    lea              r11, [srcq + 48]
+    movdqu            m0, [r11]  
+    lea              r11, [dstq + 96]                                              ; load data from source
+    punpcklbw         m1, m0, m15
+    punpckhbw         m2, m0, m15
+    psllw             m1, 6
+    psllw             m2, 6
+    PEL_STORE16      r11, m1, m2
+    LOOP_END2  pixels_64_8, dst, dststride, src, srcstride
+    RET
 ; ******************************
 ; void put_hevc_epel_h(int16_t *dst, ptrdiff_t dststride,
 ;                     uint8_t *_src, ptrdiff_t _srcstride,
@@ -602,6 +737,7 @@ INIT_XMM sse4                                    ; adds ff_ and _sse4 to functio
     PEL_STORE%1       dst, m0, m1
     LOOP_END   epel_h_h_%1_%2, epel_h_w_%1_%2, %1, dst, dststride, src, srcstride
 %endmacro
+
 
 ; ******************************
 ; void put_hevc_epel_v(int16_t *dst, ptrdiff_t dststride,
@@ -669,6 +805,8 @@ INIT_XMM sse4                                    ; adds ff_ and _sse4 to functio
     PEL_STORE%1      dst, m0, m1
     LOOP_END  epel_v_h_%1_%2, epel_v_w_%1_%2, %1, dst, dststride, src, srcstride
 %endmacro
+
+
 
 ; ******************************
 ; void put_hevc_epel_hv(int16_t *dst, ptrdiff_t dststride,
@@ -782,7 +920,7 @@ INIT_XMM sse4                                    ; adds ff_ and _sse4 to functio
 %endmacro
 
 %macro PUT_HEVC_QPEL_H 2
-    QPEL_H_FILTER     %2, mx
+    QPEL_FILTER     %2, mx
     LOOP_INIT  qpel_h_h_%1_%2, qpel_h_w_%1_%2
     QPEL_H_LOAD       %2
     QPEL_H_COMPUTE    %1, %2
@@ -844,7 +982,7 @@ INIT_XMM sse4                                    ; adds ff_ and _sse4 to functio
 
 
 %macro PUT_HEVC_QPEL_V 2
-    QPEL_H_FILTER     %2, my
+    QPEL_FILTER     %2, my
     LOOP_INIT qpel_v_h_%1_%2, qpel_v_w_%1_%2
     QPEL_V_LOAD       %2, src, srcstride
     QPEL_H_COMPUTE    %1, %2
@@ -1006,17 +1144,8 @@ INIT_XMM sse4                                    ; adds ff_ and _sse4 to functio
 ; ******************************
 ; void put_hevc_mc_pixels(int16_t *dst, ptrdiff_t dststride,
 ;                         uint8_t *_src, ptrdiff_t _srcstride,
-;                         int width, int height, int mx, int my,
-;                         int16_t* mcbuffer)
+;                         int width, int height, int mx, int my)
 ; ******************************
-cglobal hevc_put_hevc_pel_pixels2_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
-    PUT_HEVC_MC_PIXELS 2, 8, epel
-cglobal hevc_put_hevc_pel_pixels4_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
-    PUT_HEVC_MC_PIXELS 4, 8, epel
-cglobal hevc_put_hevc_pel_pixels8_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
-    PUT_HEVC_MC_PIXELS 8, 8, epel
-cglobal hevc_put_hevc_pel_pixels16_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height
-    PUT_HEVC_MC_PIXELS 16, 8, epel
 
 cglobal hevc_put_hevc_pel_pixels2_10, 9, 12, 0 , dst, dststride, src, srcstride,width,height
     PUT_HEVC_MC_PIXELS 2, 10, epel
@@ -1032,17 +1161,146 @@ cglobal hevc_put_hevc_pel_pixels8_10, 9, 12, 0 , dst, dststride, src, srcstride,
 ;                       int width, int height, int mx, int my,
 ;                       int16_t* mcbuffer)
 ; ******************************
-cglobal hevc_put_hevc_epel_h2_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height,mx,my
-    PUT_HEVC_EPEL_H    2, 8
+cglobal hevc_put_hevc_epel_h2_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_2_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE2       dst, m0, m1
+    LOOP_END2   epel_h_h_2_8, dst, dststride, src, srcstride
     RET
-cglobal hevc_put_hevc_epel_h4_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height,mx,my
-    PUT_HEVC_EPEL_H    4, 8
+
+cglobal hevc_put_hevc_epel_h4_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_4_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE4       dst, m0, m1
+    LOOP_END2   epel_h_h_4_8, dst, dststride, src, srcstride
     RET
-cglobal hevc_put_hevc_epel_h8_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height,mx,my
-    PUT_HEVC_EPEL_H    8, 8
+
+cglobal hevc_put_hevc_epel_h6_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_6_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE6       dst, m0, m1
+    LOOP_END2   epel_h_h_6_8, dst, dststride, src, srcstride
     RET
-    cglobal hevc_put_hevc_epel_h16_8, 9, 12, 0 , dst, dststride, src, srcstride,width,height,mx,my
-    PUT_HEVC_EPEL_H    16, 8
+
+cglobal hevc_put_hevc_epel_h8_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_8_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE8       dst, m0, m1
+    LOOP_END2   epel_h_h_8_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_epel_h12_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_12_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE12      dst, m0, m1
+    LOOP_END2   epel_h_h_12_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_epel_h16_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_16_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE16      dst, m0, m1
+    LOOP_END2   epel_h_h_16_8, dst, dststride, src, srcstride
+    RET
+
+
+cglobal hevc_put_hevc_epel_h24_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_24_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE16      dst, m0, m1
+    lea              r11, [srcq + 16]
+    EPEL_LOAD         8, r11, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    lea              r11, [dstq + 32]
+    PEL_STORE8       r11, m0, m1
+    LOOP_END2   epel_h_h_24_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_epel_h32_8, 9, 12, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    sub             srcq, 1
+    EPEL_FILTER       8, mx
+
+    LOOP_INIT2  epel_h_h_32_8
+
+    EPEL_LOAD         8, src, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE16      dst, m0, m1
+    lea              r11, [srcq + 16]
+    EPEL_LOAD         8, r11, 1
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    lea              r11, [dstq + 32]
+    PEL_STORE16       r11, m0, m1
+    LOOP_END2   epel_h_h_32_8, dst, dststride, src, srcstride
     RET
 
 cglobal hevc_put_hevc_epel_h2_10, 9, 12, 0 , dst, dststride, src, srcstride,width,height,mx,my
@@ -1061,17 +1319,130 @@ cglobal hevc_put_hevc_epel_h8_10, 9, 12, 0 , dst, dststride, src, srcstride,widt
 ;                      int width, int height, int mx, int my,
 ;                      int16_t* mcbuffer)
 ; ******************************
+
 cglobal hevc_put_hevc_epel_v2_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_EPEL_V    2, 8
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_2_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE2       dst, m0, m1
+    LOOP_END2  epel_v_h_2_8, dst, dststride, src, srcstride
     RET
+
 cglobal hevc_put_hevc_epel_v4_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_EPEL_V    4, 8
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_4_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE4       dst, m0, m1
+    LOOP_END2  epel_v_h_4_8, dst, dststride, src, srcstride
     RET
+
+cglobal hevc_put_hevc_epel_v6_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_6_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE6       dst, m0, m1
+    LOOP_END2  epel_v_h_6_8, dst, dststride, src, srcstride
+    RET
+
 cglobal hevc_put_hevc_epel_v8_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_EPEL_V    8, 8
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_8_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    PEL_STORE8       dst, m0, m1
+    LOOP_END2  epel_v_h_8_8, dst, dststride, src, srcstride
     RET
+
+cglobal hevc_put_hevc_epel_v12_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_12_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE12      dst, m0, m1
+    LOOP_END2  epel_v_h_12_8, dst, dststride, src, srcstride
+    RET
+
 cglobal hevc_put_hevc_epel_v16_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_EPEL_V   16, 8
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_16_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE16      dst, m0, m1
+    LOOP_END2  epel_v_h_16_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_epel_v24_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_24_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE16      dst, m0, m1
+    lea              r11, [srcq + 16]
+    EPEL_LOAD         8, r11, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m2, m14
+    paddw             m0, m2
+    lea              r11, [dstq + 32]
+    PEL_STORE8       r11, m0, m1
+    LOOP_END2  epel_v_h_24_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_epel_v32_8, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    sub               srcq, srcstrideq
+    EPEL_FILTER       8, my
+    LOOP_INIT2 epel_v_h_32_8
+    EPEL_LOAD         8, src, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    PEL_STORE16      dst, m0, m1
+    lea              r11, [srcq + 16]
+    EPEL_LOAD         8, r11, srcstride
+    pmaddubsw         m0, m13
+    pmaddubsw         m1, m13
+    pmaddubsw         m2, m14
+    pmaddubsw         m3, m14
+    paddw             m0, m2
+    paddw             m1, m3
+    lea              r11, [dstq + 32]
+    PEL_STORE16       r11, m0, m1
+    LOOP_END2  epel_v_h_32_8, dst, dststride, src, srcstride
     RET
 
 cglobal hevc_put_hevc_epel_v2_10, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
@@ -1082,16 +1453,6 @@ cglobal hevc_put_hevc_epel_v4_10, 8, 12, 0 , dst, dststride, src, srcstride, wid
     RET
 cglobal hevc_put_hevc_epel_v8_10, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
     PUT_HEVC_EPEL_V    8, 10
-    RET
-
-cglobal hevc_put_hevc_epel_v2_14, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_EPEL_V    2, 14
-    RET
-cglobal hevc_put_hevc_epel_v4_14, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_EPEL_V    4, 14
-    RET
-cglobal hevc_put_hevc_epel_v8_14, 8, 12, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_EPEL_V    8, 14
     RET
 
 ; ******************************
@@ -1126,15 +1487,285 @@ cglobal hevc_put_hevc_epel_hv8_10, 9, 12, 0 , dst, dststride, src, srcstride, wi
 ;                       int width, int height, int mx, int my)
 ; ******************************
 cglobal hevc_put_hevc_qpel_h4_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_QPEL_H    4, 8
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_4_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    PEL_STORE4      dst, m0, m1
+    LOOP_END2   qpel_h_4_8, dst, dststride, src, srcstride
     RET
 
-cglobal hevc_put_hevc_qpel_h8_8, 9, 14, 15 , dst, dststride, src, srcstride,width,height, mx, my
-    PUT_HEVC_QPEL_H    8, 8
+cglobal hevc_put_hevc_qpel_h8_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_8_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    PEL_STORE8      dst, m0, m1
+    LOOP_END2   qpel_h_8_8, dst, dststride, src, srcstride
     RET
 
-cglobal hevc_put_hevc_qpel_h16_8, 9, 14, 15 , dst, dststride, src, srcstride,width,height, mx, my
-    PUT_HEVC_QPEL_H    16, 8
+
+cglobal hevc_put_hevc_qpel_h12_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_12_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE12      dst, m0, m1
+    LOOP_END2   qpel_h_12_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_h16_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_16_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    LOOP_END2   qpel_h_16_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_h24_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_24_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    lea              r11, [dstq+32]
+    QPEL_H_LOADB       8, r12
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    PEL_STORE8       r11, m0, m1
+    LOOP_END2   qpel_h_24_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_h32_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_32_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    lea              r11, [dstq+32]
+    QPEL_H_LOADB       8, r12
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      r11, m0, m1
+    LOOP_END2   qpel_h_32_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_h48_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_48_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    lea              r11, [dstq+32]
+    QPEL_H_LOADB       8, r12
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      r11, m0, m1
+    lea              r12, [srcq+32]
+    lea              r11, [dstq+64]
+    QPEL_H_LOADB       8, r12
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      r11, m0, m1
+    LOOP_END2   qpel_h_48_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_h64_8, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER     8, mx
+    LOOP_INIT2  qpel_h_64_8
+    QPEL_H_LOAD        8
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    lea              r11, [dstq+32]
+    QPEL_H_LOADB       8, r12
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      r11, m0, m1
+    lea              r12, [srcq+32]
+    lea              r11, [dstq+64]
+    QPEL_H_LOADB       8, r12
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      r11, m0, m1
+    lea              r12, [srcq+48]
+    lea              r11, [dstq+96]
+    QPEL_H_LOADB       8, r12
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      r11, m0, m1
+    LOOP_END2   qpel_h_64_8, dst, dststride, src, srcstride
     RET
 
 cglobal hevc_put_hevc_qpel_h4_10, 9, 14, 15 , dst, dststride, src, srcstride, width, height, mx, my
@@ -1150,17 +1781,289 @@ cglobal hevc_put_hevc_qpel_h8_10, 9, 14, 15 , dst, dststride, src, srcstride, wi
 ;                       uint8_t *_src, ptrdiff_t _srcstride,
 ;                       int width, int height, int16_t* mcbuffer)
 ; ******************************
+
 cglobal hevc_put_hevc_qpel_v4_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_QPEL_V    4, 8
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_4_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    PEL_STORE4      dst, m0, m1
+    LOOP_END2  qpel_v_4_8, dst, dststride, src, srcstride
     RET
 
 cglobal hevc_put_hevc_qpel_v8_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_QPEL_V    8, 8
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_8_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    PEL_STORE8      dst, m0, m1
+    LOOP_END2  qpel_v_8_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_v12_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_12_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE12      dst, m0, m1
+    LOOP_END2  qpel_v_12_8, dst, dststride, src, srcstride
     RET
 
 cglobal hevc_put_hevc_qpel_v16_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
-    PUT_HEVC_QPEL_V    16, 8
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_16_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    LOOP_END2  qpel_v_16_8, dst, dststride, src, srcstride
     RET
+
+cglobal hevc_put_hevc_qpel_v24_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_24_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    QPEL_V_LOAD        8, r12, srcstride
+    lea              r11, [dstq+32]
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    PEL_STORE8       r11, m0, m1
+    LOOP_END2  qpel_v_24_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_v32_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_32_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    QPEL_V_LOAD        8, r12, srcstride
+    lea              r11, [dstq+32]
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16       r11, m0, m1
+    LOOP_END2  qpel_v_32_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_v48_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_48_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    QPEL_V_LOAD        8, r12, srcstride
+    lea              r11, [dstq+32]
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16       r11, m0, m1
+    lea              r12, [srcq+32]
+    QPEL_V_LOAD        8, r12, srcstride
+    lea              r11, [dstq+64]
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16       r11, m0, m1
+    LOOP_END2  qpel_v_48_8, dst, dststride, src, srcstride
+    RET
+
+cglobal hevc_put_hevc_qpel_v64_8, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
+    QPEL_FILTER        8, my
+    LOOP_INIT2 qpel_v_64_8
+    QPEL_V_LOAD        8, src, srcstride
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16      dst, m0, m1
+    lea              r12, [srcq+16]
+    QPEL_V_LOAD        8, r12, srcstride
+    lea              r11, [dstq+32]
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16       r11, m0, m1
+    lea              r12, [srcq+32]
+    QPEL_V_LOAD        8, r12, srcstride
+    lea              r11, [dstq+64]
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16       r11, m0, m1
+    lea              r12, [srcq+48]
+    QPEL_V_LOAD        8, r12, srcstride
+    lea              r11, [dstq+96]
+    pmaddubsw         m0, m11
+    pmaddubsw         m2, m12
+    pmaddubsw         m4, m13
+    pmaddubsw         m6, m14
+    paddw             m0, m2
+    paddw             m4, m6
+    paddw             m0, m4
+    pmaddubsw         m1, m11
+    pmaddubsw         m3, m12
+    pmaddubsw         m5, m13
+    pmaddubsw         m7, m14
+    paddw             m1, m3
+    paddw             m5, m7
+    paddw             m1, m5
+    PEL_STORE16       r11, m0, m1
+    LOOP_END2  qpel_v_64_8, dst, dststride, src, srcstride
+    RET
+
+
 
 cglobal hevc_put_hevc_qpel_v4_10, 9, 14, 0 , dst, dststride, src, srcstride, width, height, mx, my
     PUT_HEVC_QPEL_V    4, 10
@@ -1185,7 +2088,6 @@ cglobal hevc_put_hevc_qpel_v8_10, 9, 14, 0 , dst, dststride, src, srcstride, wid
 ;cglobal hevc_put_hevc_qpel_h4_1_v_3_8, 9, 12, 0 , dst, dststride, src, srcstride, width, height, mcbuffer
 ;    PUT_HEVC_QPEL_HV    4, 1, 3, 8
 ;    RET
-
 
 
 

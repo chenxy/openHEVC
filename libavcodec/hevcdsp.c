@@ -106,6 +106,8 @@ DECLARE_ALIGNED(16, const int8_t, ff_hevc_qpel_filters[3][16]) = {
     {  0,  1, -5, 17, 58,-10,  4, -1,  0,  1, -5, 17, 58,-10,  4, -1}
 };
 
+
+
 #define BIT_DEPTH 8
 #include "hevcdsp_template.c"
 #undef BIT_DEPTH
@@ -137,8 +139,10 @@ void ff_hevc_dsp_init(HEVCDSPContext *hevcdsp, int bit_depth)
 
 #undef PEL_FUNC
 #define PEL_FUNC(dst1, idx1, idx2, a, depth)                                   \
-    hevcdsp->dst1[0][idx1][idx2] = hevcdsp->dst1[1][idx1][idx2] = hevcdsp->dst1[2][idx1][idx2] = hevcdsp->dst1[3][idx1][idx2] = hevcdsp->dst1[4][idx1][idx2]    = a ## _ ## depth
-
+    for(i = 0 ; i < 33 ; i++)                                                  \
+{                                                                              \
+    hevcdsp->dst1[i][idx1][idx2] = a ## _ ## depth;                            \
+}
 #undef EPEL_FUNCS
 #define EPEL_FUNCS(depth)                                                     \
     PEL_FUNC(put_hevc_epel, 0, 0, put_hevc_pel_pixels, depth);                \
@@ -182,7 +186,7 @@ void ff_hevc_dsp_init(HEVCDSPContext *hevcdsp, int bit_depth)
     hevcdsp->hevc_v_loop_filter_luma_c   = FUNC(hevc_v_loop_filter_luma, depth);   \
     hevcdsp->hevc_h_loop_filter_chroma_c = FUNC(hevc_h_loop_filter_chroma, depth); \
     hevcdsp->hevc_v_loop_filter_chroma_c = FUNC(hevc_v_loop_filter_chroma, depth)
-
+    int i = 0;                      
     switch (bit_depth) {
     case 9:
         HEVC_DSP(9);
