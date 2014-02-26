@@ -1112,6 +1112,54 @@ PUT_HEVC_QPEL_HV(  8,  8)
 PUT_HEVC_QPEL_HV(  4, 10)
 PUT_HEVC_QPEL_HV(  8, 10)
 
+void ff_hevc_put_hevc_pel_pixels6_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels2_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels12_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels4_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels24_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels8_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels32_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels16_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels48_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels16_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels64_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels16_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
 void ff_hevc_put_hevc_epel_h6_8_sse(
         int16_t *dst, ptrdiff_t dststride,
         uint8_t *_src, ptrdiff_t _srcstride,
@@ -1144,6 +1192,22 @@ void ff_hevc_put_hevc_epel_h24_8_sse(
 }
 
 void ff_hevc_put_hevc_epel_h32_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h8_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h48_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h8_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h64_8_sse(
         int16_t *dst, ptrdiff_t dststride,
         uint8_t *_src, ptrdiff_t _srcstride,
         int width, int height,
@@ -1191,6 +1255,21 @@ void ff_hevc_put_hevc_epel_v32_8_sse(
     ff_hevc_put_hevc_epel_v8_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
 }
 
+void ff_hevc_put_hevc_epel_v48_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v8_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v64_8_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v8_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
 
 void ff_hevc_put_hevc_qpel_h12_8_sse(
         int16_t *dst, ptrdiff_t dststride,
@@ -1270,6 +1349,271 @@ void ff_hevc_put_hevc_qpel_v64_8_sse(
         int mx, int my) {
     ff_hevc_put_hevc_qpel_v16_8_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
 }
+
+void ff_hevc_put_hevc_pel_pixels6_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels2_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels12_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels4_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels16_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels24_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels32_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels48_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_pel_pixels64_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_pel_pixels8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h6_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h2_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+void ff_hevc_put_hevc_epel_h12_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h4_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h16_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h24_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h32_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h48_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_h64_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v6_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v2_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v12_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v4_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v16_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v24_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v32_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v48_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_epel_v64_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_epel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+
+void ff_hevc_put_hevc_qpel_h12_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_h4_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_h16_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_h24_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_h32_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_h48_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+void ff_hevc_put_hevc_qpel_h64_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_h8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_v12_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_v4_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_v16_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_v24_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_v32_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_v48_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+void ff_hevc_put_hevc_qpel_v64_10_sse(
+        int16_t *dst, ptrdiff_t dststride,
+        uint8_t *_src, ptrdiff_t _srcstride,
+        int width, int height,
+        int mx, int my) {
+    ff_hevc_put_hevc_qpel_v8_10_sse (dst, dststride, _src, _srcstride, width, height, mx, my);
+}
+
+
 
 
 
