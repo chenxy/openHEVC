@@ -109,7 +109,14 @@ PEL_PROTOTYPE(pel_pixels64,  8);
 
 PEL_PROTOTYPE(pel_pixels2 , 10);
 PEL_PROTOTYPE(pel_pixels4 , 10);
+PEL_PROTOTYPE(pel_pixels6 , 10);
 PEL_PROTOTYPE(pel_pixels8 , 10);
+PEL_PROTOTYPE(pel_pixels12, 10);
+PEL_PROTOTYPE(pel_pixels16, 10);
+PEL_PROTOTYPE(pel_pixels24, 10);
+PEL_PROTOTYPE(pel_pixels32, 10);
+PEL_PROTOTYPE(pel_pixels48, 10);
+PEL_PROTOTYPE(pel_pixels64, 10);
 
 ///////////////////////////////////////////////////////////////////////////////
 // EPEL
@@ -122,10 +129,19 @@ PEL_PROTOTYPE(epel_h12,  8);
 PEL_PROTOTYPE(epel_h16,  8);
 PEL_PROTOTYPE(epel_h24,  8);
 PEL_PROTOTYPE(epel_h32,  8);
+PEL_PROTOTYPE(epel_h48,  8);
+PEL_PROTOTYPE(epel_h64,  8);
 
 PEL_PROTOTYPE(epel_h2 , 10);
 PEL_PROTOTYPE(epel_h4 , 10);
+PEL_PROTOTYPE(epel_h6 , 10);
 PEL_PROTOTYPE(epel_h8 , 10);
+PEL_PROTOTYPE(epel_h12, 10);
+PEL_PROTOTYPE(epel_h16, 10);
+PEL_PROTOTYPE(epel_h24, 10);
+PEL_PROTOTYPE(epel_h32, 10);
+PEL_PROTOTYPE(epel_h48, 10);
+PEL_PROTOTYPE(epel_h64, 10);
 
 PEL_PROTOTYPE(epel_v2 ,  8);
 PEL_PROTOTYPE(epel_v4 ,  8);
@@ -135,11 +151,19 @@ PEL_PROTOTYPE(epel_v12,  8);
 PEL_PROTOTYPE(epel_v16,  8);
 PEL_PROTOTYPE(epel_v24,  8);
 PEL_PROTOTYPE(epel_v32,  8);
-
+PEL_PROTOTYPE(epel_v48,  8);
+PEL_PROTOTYPE(epel_v64,  8);
 
 PEL_PROTOTYPE(epel_v2 , 10);
 PEL_PROTOTYPE(epel_v4 , 10);
+PEL_PROTOTYPE(epel_v6 , 10);
 PEL_PROTOTYPE(epel_v8 , 10);
+PEL_PROTOTYPE(epel_v12, 10);
+PEL_PROTOTYPE(epel_v16, 10);
+PEL_PROTOTYPE(epel_v24, 10);
+PEL_PROTOTYPE(epel_v32, 10);
+PEL_PROTOTYPE(epel_v48, 10);
+PEL_PROTOTYPE(epel_v64, 10);
 
 PEL_PROTOTYPE(epel_hv2,  8);
 PEL_PROTOTYPE(epel_hv4,  8);
@@ -162,6 +186,12 @@ PEL_PROTOTYPE(qpel_h64,  8);
 
 PEL_PROTOTYPE(qpel_h4 , 10);
 PEL_PROTOTYPE(qpel_h8 , 10);
+PEL_PROTOTYPE(qpel_h12, 10);
+PEL_PROTOTYPE(qpel_h16, 10);
+PEL_PROTOTYPE(qpel_h24, 10);
+PEL_PROTOTYPE(qpel_h32, 10);
+PEL_PROTOTYPE(qpel_h48, 10);
+PEL_PROTOTYPE(qpel_h64, 10);
 
 PEL_PROTOTYPE(qpel_v4 ,  8);
 PEL_PROTOTYPE(qpel_v8 ,  8);
@@ -174,6 +204,12 @@ PEL_PROTOTYPE(qpel_v64,  8);
 
 PEL_PROTOTYPE(qpel_v4 , 10);
 PEL_PROTOTYPE(qpel_v8 , 10);
+PEL_PROTOTYPE(qpel_v12, 10);
+PEL_PROTOTYPE(qpel_v16, 10);
+PEL_PROTOTYPE(qpel_v24, 10);
+PEL_PROTOTYPE(qpel_v32, 10);
+PEL_PROTOTYPE(qpel_v48, 10);
+PEL_PROTOTYPE(qpel_v64, 10);
 
 PEL_PROTOTYPE_SSE(qpel_hv2,  8);
 PEL_PROTOTYPE_SSE(qpel_hv4,  8);
