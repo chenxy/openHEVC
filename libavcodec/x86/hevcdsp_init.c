@@ -84,10 +84,10 @@ void ff_hevcdsp_init_x86(HEVCDSPContext *c, const int bit_depth)
                 if (EXTERNAL_SSSE3(mm_flags)) {
 
                     c->transform_4x4_luma_add = ff_hevc_transform_4x4_luma_add_8_sse4;
-                    c->transform_add[0] = ff_hevc_transform_4x4_add_8_sse4;
+                    /*c->transform_add[0] = ff_hevc_transform_4x4_add_8_sse4;
                     c->transform_add[1] = ff_hevc_transform_8x8_add_8_sse4;
                     c->transform_add[2] = ff_hevc_transform_16x16_add_8_sse4;
-                    c->transform_add[3] = ff_hevc_transform_32x32_add_8_sse4;
+                    c->transform_add[3] = ff_hevc_transform_32x32_add_8_sse4;*/
 
 
                     c->put_weighted_pred_avg[0] = ff_hevc_put_weighted_pred_avg2_8_sse;
