@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2012 - 2013 Guillaume Martres
  * Copyright (C) 2012 - 2013 Gildas Cocherel
+ * Copyright (C) 2012 - 2013 Seppo Tomperi
  *
  * This file is part of FFmpeg.
  *

@@ -695,21 +695,21 @@ TRANSFORM_LUMA_ADD( 10);
 
 #define TRANSFORM_ADD4x4(D)                                                    \
 void ff_hevc_transform_4x4_add_ ## D ## _sse4 (                                \
-    uint8_t *_dst, int16_t *coeffs, ptrdiff_t _stride) {                       \
+    uint8_t *_dst, int16_t *coeffs, ptrdiff_t _stride, int col_limit) {        \
     int16_t *src    = coeffs;                                                  \
     int      shift  = 7;                                                       \
     int      add    = 1 << (shift - 1);                                        \
     __m128i tmp0, tmp1, tmp2, tmp3;                                            \
     __m128i e0, e1, e2, e3, e6, e7;                                            \
     INIT_ ## D();                                                              \
-    TR_4_1(p_dst1, 4, src);                                                      \
+    TR_4_1(p_dst1, 4, src);                                                    \
     shift   = 20 - D;                                                          \
     add     = 1 << (shift - 1);                                                \
     TR_4_2(dst, stride, tmp, D);                                               \
 }
 #define TRANSFORM_ADD8x8(D)                                                    \
 void ff_hevc_transform_8x8_add_ ## D ## _sse4 (                                \
-    uint8_t *_dst, int16_t *coeffs, ptrdiff_t _stride) {                       \
+    uint8_t *_dst, int16_t *coeffs, ptrdiff_t _stride, int col_limit) {        \
     int16_t tmp[8*8];                                                          \
     int16_t *src    = coeffs;                                                  \
     int16_t *p_dst1 = tmp;                                                     \
@@ -807,7 +807,7 @@ TRANSFORM_ADD8x8(10)
 ////////////////////////////////////////////////////////////////////////////////
 #define TRANSFORM_ADD2(H, D)                                                   \
 void ff_hevc_transform_ ## H ## x ## H ## _add_ ## D ## _sse4 (                \
-    uint8_t *_dst, int16_t *coeffs, ptrdiff_t _stride) {                       \
+    uint8_t *_dst, int16_t *coeffs, ptrdiff_t _stride, int col_limit) {        \
     int i, j, k, add;                                                          \
     int      shift = 7;                                                        \
     int16_t *src   = coeffs;                                                   \
